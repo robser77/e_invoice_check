@@ -1,0 +1,17 @@
+
+{% extends 'base.html' %}
+
+{% block header %}
+    <h3>{% block title %}eInvoice Check{% endblock title %}</h3>
+{% endblock header %}
+
+{% block content %}
+    <p>Upload an eInvoice XML file to view and valiadate it.</p>
+    <div>
+        {% include("_uploadForm.html") %}
+    </div>
+    <br/>
+
+
+
+{% endblock content %}

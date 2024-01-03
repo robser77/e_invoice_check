@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block header %}
+    <h3>{% block title %}Validation Result{% endblock title %}</h3>
+{% endblock header %}
+
+{% block content %}
+    <p>Page to show the results of the validation.</p>
+    <p>Filename: <span class="fw-bold">{{ filename }}</span></p>
+    <p>XML is valid and wellformed</p>
+
+    <p>View <a href="{{ url_for('views.document') }}" target="_blank">Document</a></p>
+
+{% endblock content %}
