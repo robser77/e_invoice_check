@@ -23,7 +23,9 @@ def parse_args(args):
     parser.add_argument("xslt", type=str, help=h_xslt_stylesheet)
     parser.add_argument("input", type=str, help=h_input_xml)
     parser.add_argument("output", type=str, help=h_output_xml)
-    parser.add_argument("-xv", "--version", help=h_version, choices=["1.0", "2.0"], default="1.0")
+    parser.add_argument(
+        "-xv", "--version", help=h_version, choices=["1.0", "2.0"], default="1.0"
+    )
     parser.add_argument("-v", "--verbose", help=h_verbose, action="store_true")
     parser.add_argument("-pp", "--pretty", help=h_pretty, default=True)
     parser.add_argument("-m", "--messages", help=h_messages, action="store_true")
@@ -35,12 +37,13 @@ def parse_args(args):
 
     return parser.parse_args(args)
 
+
 def use_xslt_proc_1(xslt_stylesheet_text, input_xml_text, args):
     # https://lxml.de/xpathxslt.html#xslt
-    '''to transform an xml (as string) with an xslt stylsheet (as string)
-        using xslt version 1.0 (lxml).
-        returns a tuple (transform result: string), errorlog: list)'''
-    # etree from xslt stylesheet string 
+    """to transform an xml (as string) with an xslt stylsheet (as string)
+    using xslt version 1.0 (lxml).
+    returns a tuple (transform result: string), errorlog: list)"""
+    # etree from xslt stylesheet string
     xslt_root = etree.XML(xslt_stylesheet_text)
     transform = etree.XSLT(xslt_root)
     # etree from input xml string
@@ -54,8 +57,7 @@ def use_xslt_proc_1(xslt_stylesheet_text, input_xml_text, args):
         print("xslt error: " + str(exception))
         sys.exit(14)
 
-    return (etree.tostring(result, encoding="unicode"),
-            transform.error_log)
+    return (etree.tostring(result, encoding="unicode"), transform.error_log)
 
 
 def use_xslt_proc_2(xslt_stylesheet_text, input_xml_text, args):
@@ -70,7 +72,7 @@ def use_xslt_proc_2(xslt_stylesheet_text, input_xml_text, args):
 
         xsltproc.compile_stylesheet(stylesheet_text=xslt_stylesheet_text)
         result = xsltproc.transform_to_string()
-        
+
         return (result, [])
 
 
@@ -94,7 +96,7 @@ if __name__ == "__main__":
         print("xslt file: " + str(exception))
         sys.exit(13)
 
-    # convert xslt sytlesheet etree object to string 
+    # convert xslt sytlesheet etree object to string
     xslt_stylesheet_text = etree.tostring(xslt_stylesheet, encoding="unicode")
 
     # check if input xml comes from stdin or file and if it is a valid xml
@@ -115,18 +117,17 @@ if __name__ == "__main__":
             print("input file: " + str(exception))
             sys.exit(13)
 
-    # convert input xml etree nodeset to string 
+    # convert input xml etree nodeset to string
     input_xml_text = etree.tostring(input_xml, encoding="unicode")
-    
-    # use xslt processor version 1.0 lxml 
+
+    # use xslt processor version 1.0 lxml
     if args.version == "1.0":
         result = use_xslt_proc_1(xslt_stylesheet_text, input_xml_text, args)
         output_xml = etree.XML(result[0].encode())
         if args.output == "-":
-            print(etree.tostring(output_xml,
-                                 pretty_print=args.pretty,
-                                 encoding="unicode"
-                                 ))
+            print(
+                etree.tostring(output_xml, pretty_print=args.pretty, encoding="unicode")
+            )
         else:
             out_tree = etree.ElementTree(output_xml)
             out_tree.write(args.output, pretty_print=args.pretty)
@@ -137,6 +138,5 @@ if __name__ == "__main__":
         if args.output == "-":
             print(result[0])
         else:
-            with open (args.output, "w") as out_file:
+            with open(args.output, "w") as out_file:
                 out_file.write(result[0])
-    
