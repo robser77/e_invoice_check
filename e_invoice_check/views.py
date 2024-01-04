@@ -1,6 +1,6 @@
 import os
 import uuid
-from flask import Blueprint, flash, render_template, request, abort, current_app
+from flask import Blueprint, flash, render_template, request, abort, current_app, url_for
 from werkzeug.utils import secure_filename
 from lxml import etree
 from e_invoice_check.helpers import validate_file_content, transform_xml, Xslt_proc
@@ -14,9 +14,9 @@ def home():
     return render_template("views/home.html")
 
 
-@bp.route("/document")
-def document():
-    doc_template_name = "document.html"
+@bp.route("/document/<my_uuid>")
+def document(my_uuid):
+    doc_template_name = my_uuid 
     with open(f"e_invoice_check/templates/views/{doc_template_name}", "r") as html_file:
         data = html_file.read()
     return data
@@ -70,10 +70,13 @@ def about():
                 ) as html_file:
                     html_file.write(doc_template_html)
 
+                url_to_document = url_for("views.document", my_uuid=doc_template_name)
+                print(url_to_document)
                 return render_template(
                     "views/doc-view.html",
                     filename=filename,
                     doc_template_name=doc_template_name,
+                    url_to_document=url_to_document
                 )
 
     else:
