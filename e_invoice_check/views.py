@@ -1,6 +1,14 @@
 import os
 import uuid
-from flask import Blueprint, flash, render_template, request, abort, current_app, url_for
+from flask import (
+    Blueprint,
+    flash,
+    render_template,
+    request,
+    abort,
+    current_app,
+    url_for,
+)
 from werkzeug.utils import secure_filename
 from lxml import etree
 from e_invoice_check.helpers import validate_file_content, transform_xml, Xslt_proc
@@ -14,11 +22,12 @@ def home():
     return render_template("views/home.html")
 
 
-@bp.route("/document/<my_uuid>")
-def document(my_uuid):
-    doc_template_name = my_uuid 
-    with open(f"e_invoice_check/templates/views/{doc_template_name}", "r") as html_file:
-        data = html_file.read()
+@bp.route("/document/<document_html_name>")
+def document(document_html_name):
+    with open(
+        f"e_invoice_check/templates/views/{document_html_name}", "r"
+    ) as doc_template:
+        data = doc_template.read()
     return data
 
 
@@ -59,24 +68,23 @@ def about():
                     stylesheet, pretty_print="True", encoding="unicode"
                 )
 
-                # create html view of the invoice with xslt and save to template dir
-                # doc_template_name = "document.html"
-                doc_template_name = str(uuid.uuid4()) + ".html"
+                # create html view of the document with xslt and save to template dir
                 xslt_proc = Xslt_proc(stylesheet_text=xslt)
-                doc_template_html = transform_xml(xslt_proc, xml)
+                document_html = transform_xml(xslt_proc, xml)
 
+                document_html_name = str(uuid.uuid4()) + ".html"
                 with open(
-                    f"e_invoice_check/templates/views/{doc_template_name}", "w"
-                ) as html_file:
-                    html_file.write(doc_template_html)
+                    f"e_invoice_check/templates/views/{document_html_name}", "w"
+                ) as document_html_file:
+                    document_html_file.write(document_html)
 
-                url_to_document = url_for("views.document", my_uuid=doc_template_name)
-                print(url_to_document)
+                document_html_url = url_for(
+                    "views.document", document_html_name=document_html_name
+                )
                 return render_template(
                     "views/doc-view.html",
                     filename=filename,
-                    doc_template_name=doc_template_name,
-                    url_to_document=url_to_document
+                    document_html_url=document_html_url,
                 )
 
     else:
