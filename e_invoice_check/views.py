@@ -25,20 +25,24 @@ path_to_stylesheets = "e_invoice_check/static/xslt"
 def page_not_found(e):
     return render_template("error.html", error=e), 404
 
+
 @bp.app_errorhandler(415)
 def wrong_file_extension(e):
     return render_template("error.html", error=e), 415
+
 
 @bp.app_errorhandler(418)
 def wrong_file_extension(e):
     return render_template("error.html", error=e), 418
 
+
 @bp.app_errorhandler(500)
 def wrong_file_extension(e):
     return render_template("error.html", error=e), 500
 
+
 @bp.route("/about")
-def home():
+def about():
     return render_template("views/about.html")
 
 
@@ -52,7 +56,8 @@ def document(document_html_name):
 
 
 @bp.route("/", methods=["GET", "POST"])
-def about():
+def home(filename="", document_html_url=""):
+
     # get object from uploaded file
     if request.files.getlist("file"):
         for uploaded_file in request.files.getlist("file"):
@@ -83,9 +88,7 @@ def about():
 
             # Parse xslt and transform to str
             stylesheet = etree.parse(f"{path_to_stylesheets}/stylesheet-ubl.xslt")
-            xslt = etree.tostring(
-                stylesheet, pretty_print="True", encoding="unicode"
-            )
+            xslt = etree.tostring(stylesheet, pretty_print="True", encoding="unicode")
 
             # Create html view of the document with xslt and save to template dir
             xslt_proc = Xslt_proc(stylesheet_text=xslt)
@@ -100,9 +103,11 @@ def about():
             document_html_url = url_for(
                 "views.document", document_html_name=document_html_name
             )
+
             return render_template(
-                "views/doc-view.html",
+                "views/home.html",
                 filename=filename,
                 document_html_url=document_html_url,
             )
+
     return render_template("views/home.html")

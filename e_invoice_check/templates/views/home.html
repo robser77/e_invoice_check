@@ -12,6 +12,12 @@
     </div>
     <br/>
 
-
+    {% if filename and document_html_url %}
+        <hr class="bg-danger border-2 border-top border-danger" />
+        <h4>Validation result:</h4>
+        <p>Filename: <span class="fw-bold">{{ filename }}</span></p>
+        <p>XML is valid and wellformed</p>
+        <p>View <a href="{{ document_html_url }}" target="_blank">Document</a></p>
+    {% endif %}
 
 {% endblock content %}
