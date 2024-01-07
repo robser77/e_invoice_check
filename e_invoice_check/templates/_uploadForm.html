@@ -1,4 +1,16 @@
 <form method="POST" action="" enctype="multipart/form-data">
+
+    <label for="version-dropdown">Select a format:</label>
+    <select id="version-dropdown" name="version-dropdown">
+        <option value="peppol_bis_billing_3.0_invoice">Peppol BIS Billing 3.0 - Invoice</option>
+        <option value="peppol_bis_billing_3.0_creditnote">Peppol BIS Billing 3.0 - CreditNote</option>
+        <!-- <option value="option1">Option 1</option> -->
+        <!-- <option value="option2">Option 2</option> -->
+        <!-- <option value="option3">Option 3</option> -->
+        <!-- Add more options as needed -->
+    </select>
+    <br/>
+    <br/>
     <input type="file" name="file">
     <button type="submit" class="btn btn-primary">Validate</button>
 </form>

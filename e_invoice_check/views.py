@@ -57,7 +57,6 @@ def document(document_html_name):
 
 @bp.route("/", methods=["GET", "POST"])
 def home(filename="", document_html_url=""):
-
     # get object from uploaded file
     if request.files.getlist("file"):
         for uploaded_file in request.files.getlist("file"):
