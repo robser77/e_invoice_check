@@ -17,8 +17,20 @@ from e_invoice_check.helpers import validate_file_content, transform_xml, Xslt_p
 bp = Blueprint("views", __name__)
 path_to_document_html_files = "e_invoice_check/templates/views/tmp"
 path_to_stylesheets = "e_invoice_check/static/xslt"
+path_to_schemas = "e_invoice_check/static/xsd"
 
-# TODO: rm old files, add error messages, add schema validation
+allowed_formats = {
+    "peppol_bis_billing_3.0_invoice":"Peppol BIS Billing 3.0 -- Invoice",
+    "peppol_bis_billing_3.0_credit_note":"Peppol BIS Billing 3.0 -- CreditNote"
+}
+
+format_to_schema_file = {
+    "peppol_bis_billing_3.0_invoice":"oasis_ubl/maindoc/UBL-Invoice-2.1.xsd",
+    "peppol_bis_billing_3.0_credit_note":"oasis_ubl/maindoc/UBL-CreditNote-2.1.xsd"
+}
+
+# TODO: 
+# add schema validation
 
 
 @bp.app_errorhandler(404)
@@ -85,6 +97,10 @@ def home(filename="", document_html_url=""):
             tree = etree.parse(uploaded_file.stream)
             xml = etree.tostring(tree, pretty_print="True", encoding="unicode")
 
+            # Validate input file with corresponding xml schema
+            current_format = request.form.get('format-dropdown')
+            current_xsd_file_path = path_to_schemas + "/" + format_to_schema_file[current_format] 
+            print(current_xsd_file_path)
             # Parse xslt and transform to str
             stylesheet = etree.parse(f"{path_to_stylesheets}/stylesheet-ubl.xslt")
             xslt = etree.tostring(stylesheet, pretty_print="True", encoding="unicode")
@@ -107,6 +123,7 @@ def home(filename="", document_html_url=""):
                 "views/home.html",
                 filename=filename,
                 document_html_url=document_html_url,
+                allowed_formats=allowed_formats
             )
 
-    return render_template("views/home.html")
+    return render_template("views/home.html", allowed_formats=allowed_formats)
