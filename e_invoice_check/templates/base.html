@@ -7,6 +7,55 @@
           .my-width {
             width: 10px;
           }
+          .grey-background {
+            background-color: lightgrey;
+          }
+          .code-font {
+            font-family: 'Consolas', 'Inconsolata', 'Fira Code', monospace;
+          }
+          .custom-container {
+            text-align: left;
+          }
+          .code-container {
+            background-color: #f5f5f5;
+            border-left: 3px solid lightgrey;
+          }
+          p {
+            overflow-x: auto; 
+          }
+
+          pre.code {
+            text-align: left;
+            overflow-x:hidden ; 
+          }
+
+          ol.my-ol {
+            list-style-type: none;
+            counter-reset: my-counter;
+            padding-left: 0.0em;
+          }
+
+          ol.my-ol li {
+	          counter-increment: my-counter;
+          }
+
+          ol.my-ol pre {
+          	margin-left: 3.3em;
+            display: inline;
+          }
+            
+          ol.my-ol li::before {
+            content: counter(my-counter);
+            position: absolute;
+            width:2.0em;
+            text-align: right;
+            font-family: 'Consolas', 'Inconsolata', 'Fira Code', monospace;
+            color: grey; 
+          }
+
+          ol.my-ol li::before {
+            margin-left: 0.0em;
+          }
         </style>
     </head>
     <body>

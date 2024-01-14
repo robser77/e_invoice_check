@@ -11,7 +11,13 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 from lxml import etree
-from e_invoice_check.helpers import validate_file_content, transform_xml, Xslt_proc
+from e_invoice_check.helpers import (
+    get_errors_from_schema_validation,
+    validate_file_content,
+    transform_xml,
+    Xslt_proc,
+    my_parser,
+)
 
 
 bp = Blueprint("views", __name__)
@@ -20,17 +26,30 @@ path_to_stylesheets = "e_invoice_check/static/xslt"
 path_to_schemas = "e_invoice_check/static/xsd"
 
 allowed_formats = {
-    "peppol_bis_billing_3.0_invoice":"Peppol BIS Billing 3.0 -- Invoice",
-    "peppol_bis_billing_3.0_credit_note":"Peppol BIS Billing 3.0 -- CreditNote"
+    "peppol_bis_billing_3.0_invoice": "Peppol BIS Billing 3.0 -- Invoice",
+    "peppol_bis_billing_3.0_credit_note": "Peppol BIS Billing 3.0 -- CreditNote",
 }
 
-format_to_schema_file = {
-    "peppol_bis_billing_3.0_invoice":"oasis_ubl/maindoc/UBL-Invoice-2.1.xsd",
-    "peppol_bis_billing_3.0_credit_note":"oasis_ubl/maindoc/UBL-CreditNote-2.1.xsd"
+format_to_schema_mapping = {
+    "peppol_bis_billing_3.0_invoice": "oasis_ubl/maindoc/UBL-Invoice-2.1.xsd",
+    "peppol_bis_billing_3.0_credit_note": "oasis_ubl/maindoc/UBL-CreditNote-2.1.xsd",
 }
 
-# TODO: 
-# add schema validation
+format_to_xslt_mapping = {
+    "peppol_bis_billing_3.0_invoice": "stylesheet-ubl.xslt",
+    "peppol_bis_billing_3.0_credit_note": "stylesheet-ubl.xslt",
+}
+
+
+# TODO:
+# - move schema validation to helpers
+# - make document_html_view generation with xslt dependent of format (dropdown)
+# - clean up home view. The render_template should be called only once (continue?).
+#
+# what I dont like is that I use saxonche and lxml
+# I would prefer to have only one (is this possible)
+# - saxonche -> xslt3.0 (for xml to html, schematron)
+# - lxml -> parsing and schema validation
 
 
 @bp.app_errorhandler(404)
@@ -75,7 +94,9 @@ def home(filename="", document_html_url=""):
             filename = uploaded_file.filename
             # Check if file was provided
             if filename == "":
-                return render_template("views/home.html")
+                return render_template(
+                    "views/home.html", allowed_formats=allowed_formats
+                )
 
             # Check file extension
             file_ext = os.path.splitext(filename)[1]
@@ -83,26 +104,52 @@ def home(filename="", document_html_url=""):
                 flash(
                     f"File extension not allowed. Allowed values: 'xml', Filename: {filename}"
                 )
-                return render_template("views/home.html")
+                return render_template(
+                    "views/home.html", allowed_formats=allowed_formats
+                )
 
             # Validate file content
             result = validate_file_content(uploaded_file.stream, file_ext)
             if not result[0]:
                 flash(f"File content error: {result[2]}")
-                return render_template("views/home.html")
+                return render_template(
+                    "views/home.html", allowed_formats=allowed_formats
+                )
 
-            # Reset file stream, since it was consumed by validation
+            # Reset file stream, since it was consumed by file content validation
             uploaded_file.stream.seek(0)
             # Parse xml and transform to str
-            tree = etree.parse(uploaded_file.stream)
+            tree = etree.parse(uploaded_file.stream, parser=my_parser)
             xml = etree.tostring(tree, pretty_print="True", encoding="unicode")
+            xml_test = xml
 
+            # Get target format from dropdown
+            current_format = request.form.get("format-dropdown")
+            # Get and load schema file based on format
+            current_xsd_file = (
+                path_to_schemas + "/" + format_to_schema_mapping[current_format]
+            )
+            schema = etree.parse(current_xsd_file, parser=my_parser)
+
+            validation_report={}
             # Validate input file with corresponding xml schema
-            current_format = request.form.get('format-dropdown')
-            current_xsd_file_path = path_to_schemas + "/" + format_to_schema_file[current_format] 
-            print(current_xsd_file_path)
-            # Parse xslt and transform to str
-            stylesheet = etree.parse(f"{path_to_stylesheets}/stylesheet-ubl.xslt")
+            result = get_errors_from_schema_validation(tree, schema)
+            if result is None:
+                schema_validation_log =  [
+                    f"Validation with schema: "
+                    + format_to_schema_mapping[current_format]
+                    + " was successful.",]
+                is_schema_validation_ok = True
+            else:
+                schema_validation_log = result
+                is_schema_validation_ok = False
+
+            validation_report["schema_validation_log"] = schema_validation_log
+            validation_report["is_schema_validation_ok"] = is_schema_validation_ok
+            current_xslt_file = (
+                path_to_stylesheets + "/" + format_to_xslt_mapping[current_format]
+            )
+            stylesheet = etree.parse(current_xslt_file, parser=my_parser)
             xslt = etree.tostring(stylesheet, pretty_print="True", encoding="unicode")
 
             # Create html view of the document with xslt and save to template dir
@@ -123,7 +170,9 @@ def home(filename="", document_html_url=""):
                 "views/home.html",
                 filename=filename,
                 document_html_url=document_html_url,
-                allowed_formats=allowed_formats
+                allowed_formats=allowed_formats,
+                validation_report=validation_report,
+                xml_test=xml_test
             )
 
     return render_template("views/home.html", allowed_formats=allowed_formats)

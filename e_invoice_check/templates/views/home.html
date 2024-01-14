@@ -6,18 +6,60 @@
 {% endblock header %}
 
 {% block content %}
-    <p>Upload an eInvoice XML file to view and valiadate it.</p>
-    <div>
-        {% include("_uploadForm.html") %}
-    </div>
-    <br/>
+    <!-- <div class="container"> -->
+    <div class="custom-container">
+        <div class="row">
+            <div class="col-5">
+                <p>Upload an eInvoice XML file to view and valiadate it.</p>
+                <div>
+                    {% include("_uploadForm.html") %}
+                </div>
+                <br/>
 
-    {% if filename and document_html_url %}
-        <hr class="bg-danger border-2 border-top border-danger" />
-        <h4>Validation result:</h4>
-        <p>Filename: <span class="fw-bold">{{ filename }}</span></p>
-        <p>XML is valid and wellformed</p>
-        <p>View <a href="{{ document_html_url }}" target="_blank">Document</a></p>
-    {% endif %}
+                {% if filename and document_html_url %}
+                    <hr class="bg-danger border-2 border-top border-danger" />
+                    <h4>Validation result:</h4>
+                    <ul>
+                        <li>
+                            <svg class="bi flex-shrink-0 me-2" width="16" height="16" fill="green" role="img" aria-label="Info:">
+                                <use xlink:href="#check-circle-fill"/>
+                            </svg>
+                            XML is valid and wellformed
+                        </li>
+                        <li>
+                            {% if validation_report["is_schema_validation_ok"] %}
+                            <svg class="bi flex-shrink-0 me-2" width="16" height="16" fill="green" role="img" aria-label="Info:">
+                                <use xlink:href="#check-circle-fill"/>
+                            </svg>
+                            {% else %}
+                            <svg class="bi flex-shrink-0 me-2" width="16" height="16" fill="red" role="img" aria-label="Info:">
+                                <use xlink:href="#exclamation-triangle-fill"/>
+                            </svg>
+                            {% endif %}
+                            Schema result: 
+                        </li>
+                        {% for entry in validation_report["schema_validation_log"] %}
+                            <p class="alert-primary shadow code-font">{{ entry }}</p>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            </div>
+            <div class="col-7">
+                <p>Uploaded file: <span class="fw-bold">{{ filename }}</span>
+                <span>, view human-readable <a href="{{ document_html_url }}" target="_blank">document</a></span></p>
+                <div class="code-container">
+                    {% if xml_test %}
+                    <ol class="my-ol">
+                        {% for line in xml_test.splitlines() %}
+                        <li>
+                            <pre class="code">{{ line }}</pre>
+                        </li>
+                        {% endfor %}
+                    </ol>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div> 
 
 {% endblock content %}
