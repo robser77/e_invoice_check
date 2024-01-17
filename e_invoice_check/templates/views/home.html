@@ -2,7 +2,7 @@
 {% extends 'base.html' %}
 
 {% block header %}
-    <h3>{% block title %}eInvoice Check{% endblock title %}</h3>
+    <h3>{% block title %}eDocument Check{% endblock title %}</h3>
 {% endblock header %}
 
 {% block content %}
@@ -10,7 +10,7 @@
     <div class="custom-container">
         <div class="row">
             <div class="col-5">
-                <p>Upload an eInvoice XML file to view and valiadate it.</p>
+                <p>Upload an eDocument XML file to view and valiadate it.</p>
                 <div>
                     {% include("_uploadForm.html") %}
                 </div>
@@ -41,14 +41,29 @@
                         {% for entry in validation_report["schema_validation_log"] %}
                             <p class="alert-primary shadow code-font">{{ entry }}</p>
                         {% endfor %}
+                        <li>
+                            {% if validation_report["is_schematron_validation_ok"] %}
+                            <svg class="bi flex-shrink-0 me-2" width="16" height="16" fill="green" role="img" aria-label="Info:">
+                                <use xlink:href="#check-circle-fill"/>
+                            </svg>
+                            {% else %}
+                            <svg class="bi flex-shrink-0 me-2" width="16" height="16" fill="red" role="img" aria-label="Info:">
+                                <use xlink:href="#exclamation-triangle-fill"/>
+                            </svg>
+                            {% endif %}
+                            Schematron result: 
+                        </li>
+                        {% for entry in validation_report["schematron_validation_log"] %}
+                            <p class="alert-primary shadow code-font">{{ entry }}</p>
+                        {% endfor %}
                     </ul>
                 {% endif %}
             </div>
             <div class="col-7">
+                {% if xml_test %}
                 <p>Uploaded file: <span class="fw-bold">{{ filename }}</span>
                 <span>, view human-readable <a href="{{ document_html_url }}" target="_blank">document</a></span></p>
                 <div class="code-container">
-                    {% if xml_test %}
                     <ol class="my-ol">
                         {% for line in xml_test.splitlines() %}
                         <li>
@@ -56,8 +71,8 @@
                         </li>
                         {% endfor %}
                     </ol>
-                    {% endif %}
                 </div>
+                {% endif %}
             </div>
         </div>
     </div> 

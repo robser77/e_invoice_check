@@ -2,7 +2,38 @@ from saxonche import PySaxonProcessor
 from lxml import etree
 from pathlib import Path
 
-# instantiate a parser which removes white space while parsing
+
+path_to_document_html_files = "e_invoice_check/templates/views/tmp"
+path_to_stylesheets = "e_invoice_check/static/xslt"
+path_to_schemas = "e_invoice_check/static/xsd"
+
+
+allowed_formats = {
+    "peppol_bis_billing_3.0_invoice": "Peppol BIS Billing 3.0 -- Invoice",
+    "peppol_bis_billing_3.0_credit_note": "Peppol BIS Billing 3.0 -- CreditNote",
+}
+
+format_to_schema_mapping = {
+    "peppol_bis_billing_3.0_invoice": "oasis_ubl/maindoc/UBL-Invoice-2.1.xsd",
+    "peppol_bis_billing_3.0_credit_note": "oasis_ubl/maindoc/UBL-CreditNote-2.1.xsd",
+}
+
+format_to_schematron_xslt_mapping = {
+    "peppol_bis_billing_3.0_invoice": "PEPPOL-EN16931-UBL_schematron.xslt",
+    "peppol_bis_billing_3.0_credit_note": "PEPPOL-EN16931-UBL_schematron.xslt",
+}
+
+format_to_schematron_mapping = {
+    "peppol_bis_billing_3.0_invoice": "PEPPOL-EN16931-UBL.sch",
+    "peppol_bis_billing_3.0_credit_note": "PEPPOL-EN16931-UBL.sch",
+}
+
+format_to_xslt_mapping = {
+    "peppol_bis_billing_3.0_invoice": "stylesheet-ubl.xslt",
+    "peppol_bis_billing_3.0_credit_note": "stylesheet-ubl.xslt",
+}
+
+# instantiate a parser which removes white space while parsing with lxml
 my_parser = etree.XMLParser(remove_blank_text=True)
 
 
