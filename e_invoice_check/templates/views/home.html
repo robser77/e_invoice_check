@@ -54,7 +54,7 @@
                             Schematron result: 
                         </li>
                         {% for entry in validation_report["schematron_validation_log"] %}
-                            <p class="alert-primary shadow code-font">{{ entry }}</p>
+                            <pre class="alert-primary shadow code-font custom-pre">{{ entry }}</pre>
                         {% endfor %}
                     </ul>
                 {% endif %}

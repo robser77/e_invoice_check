@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from flask import (
     Blueprint,
@@ -167,10 +168,21 @@ def home(filename="", document_html_url=""):
                     flash(f" schematron result ok")
                 else:
                     for error in result:
-                        for attribute_name, attribute_value in error.attrib.items():
-                            schematron_validation_log.append(attribute_name + "|" + attribute_value)
-                    is_schematron_validation_ok = False
-                    flash(f"File schematron result: {schematron_validation_log}")
+                        error_type = error.get("flag")         
+                        error_id = error.get("id")         
+                        error_text = error.find("./*[1]").text
+                        error_location_raw = error.get("location")         
+
+                        pattern_to_find = r"Q\{[^}]*\}"
+                        error_location = re.sub(pattern_to_find, "", error_location_raw)
+                        error_str = f"{error_type}, " + \
+                                    f"{error_id} \n" + \
+                                    f"{error_text} \n" + \
+                                    f"{error_location}" 
+
+                        schematron_validation_log.append(error_str)
+                        is_schematron_validation_ok = False
+                        print(str(error.get("id")))
 
                 validation_report["schematron_validation_log"] = schematron_validation_log
                 validation_report["is_schematron_validation_ok"] = is_schematron_validation_ok
