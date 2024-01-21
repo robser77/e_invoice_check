@@ -182,7 +182,6 @@ def home(filename="", document_html_url=""):
 
                         schematron_validation_log.append(error_str)
                         is_schematron_validation_ok = False
-                        print(str(error.get("id")))
 
                 validation_report["schematron_validation_log"] = schematron_validation_log
                 validation_report["is_schematron_validation_ok"] = is_schematron_validation_ok
