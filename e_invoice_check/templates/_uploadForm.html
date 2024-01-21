@@ -1,12 +1,21 @@
 <form method="POST" action="" enctype="multipart/form-data">
-    <label for="format-dropdown">Select a format:</label>
-    <select id="format-dropdown" name="format-dropdown">
-        {% for format_id, display_value in allowed_formats.items() %}
-        <option value="{{ format_id }}">{{ display_value }}</option>
-        {% endfor %}
-    </select>
-    <br/>
-    <br/>
-    <input type="file" name="file">
-    <button type="submit" class="btn btn-primary">Validate</button>
+    <div class="container">
+        <div class="row">
+            <p>Upload an eDocument XML file to valiadate it.</p>
+        </div>
+        <div class="row" style="margin-top: 5px;">
+            <label for="format-dropdown">Select a format:</label>
+            <select id="format-dropdown" name="format-dropdown">
+                {% for format_id, display_value in allowed_formats.items() %}
+                <option value="{{ format_id }}">{{ display_value }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="row" style="margin-top: 5px;">
+            <input type="file" name="file">
+        </div>
+        <div class="row" style="margin-top: 5px;">
+            <button type="submit" class="btn btn-primary">Validate</button>
+        </div>
+    </div>
 </form>

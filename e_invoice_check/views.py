@@ -136,6 +136,7 @@ def home(filename="", document_html_url=""):
 
             validation_report["schema_validation_log"] = schema_validation_log
             validation_report["is_schema_validation_ok"] = is_schema_validation_ok
+            validation_report["schema_validation_done"] = True
 
             # validation with schematron xslt
             if is_schema_validation_ok == True:
@@ -185,6 +186,7 @@ def home(filename="", document_html_url=""):
 
                 validation_report["schematron_validation_log"] = schematron_validation_log
                 validation_report["is_schematron_validation_ok"] = is_schematron_validation_ok
+                validation_report["schematron_validation_done"] = True
                     
             # Create html view of the document with xslt3 and save to template dir
             current_xslt_file = (

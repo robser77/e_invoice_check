@@ -1,22 +1,16 @@
 
 {% extends 'base.html' %}
 
-{% block header %}
-    <h3>{% block title %}eDocument Check{% endblock title %}</h3>
-{% endblock header %}
-
 {% block content %}
-    <!-- <div class="container"> -->
     <div class="custom-container">
         <div class="row">
-            <div class="col-5">
-                <p>Upload an eDocument XML file to view and valiadate it.</p>
+            <div class="col-sm-4">
                 <div>
                     {% include("_uploadForm.html") %}
                 </div>
-                <br/>
 
                 {% if filename and document_html_url %}
+                <div class="container">
                     <hr class="bg-danger border-2 border-top border-danger" />
                     <h4>Validation result:</h4>
                     <ul>
@@ -41,6 +35,7 @@
                         {% for entry in validation_report["schema_validation_log"] %}
                             <p class="alert-primary shadow code-font">{{ entry }}</p>
                         {% endfor %}
+                        {% if validation_report["schematron_validation_done"] == True %}
                         <li>
                             {% if validation_report["is_schematron_validation_ok"] %}
                             <svg class="bi flex-shrink-0 me-2" width="16" height="16" fill="green" role="img" aria-label="Info:">
@@ -53,26 +48,48 @@
                             {% endif %}
                             Schematron result: 
                         </li>
+                        {% endif %}
                         {% for entry in validation_report["schematron_validation_log"] %}
                             <pre class="alert-primary shadow code-font custom-pre">{{ entry }}</pre>
                         {% endfor %}
                     </ul>
+                </div>
                 {% endif %}
             </div>
-            <div class="col-sm-7">
+            <div class="col-sm-8" style="margin-top: -63px;">
                 {% if xml_test %}
-                <!-- <p>Uploaded file: <span class="fw-bold">{{ filename }}</span>
-                <span>, view human-readable <a href="{{ document_html_url }}" target="_blank">document</a></span></p> -->
-
+                <!-- logic to set specific tab active, depends on success with validation -->
                 <div class="container mt-5">
+                    {% if validation_report["schematron_validation_log"] and
+                          validation_report["is_schematron_validation_ok"] == False %}
+                        {% set xml_is_active = 'active' %} 
+                        {% set readable_is_active = '' %}
+                    {% elif validation_report["schema_validation_log"] and
+                            validation_report["is_schema_validation_ok"]  == True %}
+                        {% set xml_is_active = '' %} 
+                        {% set readable_is_active = 'active' %}
+                    {% else %}
+                        {% set xml_is_active = 'active' %} 
+                        {% set readable_is_active = '' %}
+                    {% endif %}
+                    <!-- Navigation bar with tabs -->
                     <nav>
-                        <div class="nav nav-tabs" id="nav-tab" role="tablist">
-                          <button class="nav-link active" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">XML</button>
-                          <button class="nav-link" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">Readable</button>
+                        <div class="nav nav-tabs d-flex align-items-center" id="nav-tab" role="tablist">
+                            <button class="nav-link {{ xml_is_active }}" id="nav-home-tab" data-bs-toggle="tab" data-bs-target="#nav-home" type="button" role="tab" aria-controls="nav-home" aria-selected="true">xml</button>
+                            <button class="nav-link {{ readable_is_active }}" id="nav-profile-tab" data-bs-toggle="tab" data-bs-target="#nav-profile" type="button" role="tab" aria-controls="nav-profile" aria-selected="false">readable</button>
+                        </div>
+                        <div class="row">
+                            <p>
+                                Uploaded file: 
+                                <span class="fw-bold">{{ filename }}</span>
+                                <span>, view human-readable <a href="{{ document_html_url }}" target="_blank">document</a></span>
+                                <span> in new window</span>
+                            </p>
                         </div>
                     </nav>
+                    <!-- Content for navigation bar -->
                     <div class="tab-content" id="nav-tabContent">
-                        <div class="tab-pane fade show active" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
+                        <div class="tab-pane fade show {{ xml_is_active }}" id="nav-home" role="tabpanel" aria-labelledby="nav-home-tab">
                             <div class="code-container">
                                 <ol class="my-ol">
                                     {% for line in xml_test.splitlines() %}
@@ -83,8 +100,8 @@
                                 </ol>
                             </div>
                         </div>
-                        <div class="tab-pane fade" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
-                            <iframe src="{{ document_html_url }}" scrolling="no" width="700" height="1400" frameborder="0"></iframe>
+                        <div class="tab-pane fade show {{ readable_is_active }}" id="nav-profile" role="tabpanel" aria-labelledby="nav-profile-tab">
+                            <iframe src="{{ document_html_url }}" scrolling="no" width="100%" height="1400" frameborder="0"></iframe>
                         </div>
                     </div>
                 </div>
