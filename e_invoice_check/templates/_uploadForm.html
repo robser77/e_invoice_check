@@ -5,9 +5,9 @@
         </div>
         <div class="row" style="margin-top: 5px;">
             <label for="format-dropdown">Select a format:</label>
-            <select id="format-dropdown" name="format-dropdown">
+            <select class="code-font" id="format-dropdown" name="format-dropdown">
                 {% for format_id, display_value in allowed_formats.items() %}
-                <option value="{{ format_id }}">{{ display_value }}</option>
+                <option class="code-font" value="{{ format_id }}">{{ display_value }}</option>
                 {% endfor %}
             </select>
         </div>

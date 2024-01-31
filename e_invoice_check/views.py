@@ -26,6 +26,7 @@ from e_invoice_check.helpers import (
     format_to_schematron_xslt_mapping,
     format_to_schematron_mapping,
     format_to_xslt_mapping,
+    xslt_params,
 )
 
 
@@ -34,6 +35,11 @@ bp = Blueprint("views", __name__)
 
 # TODO:
 # - clean up home view. The render_template should be called only once (continue?).
+#
+# - fix readable html view, height and width issue (100% doesn't work)
+#
+#
+#
 #
 # what I dont like is that I use saxonche and lxml
 # I would prefer to have only one (is this possible)
@@ -139,7 +145,8 @@ def home(filename="", document_html_url=""):
             validation_report["schema_validation_done"] = True
 
             # validation with schematron xslt
-            if is_schema_validation_ok == True:
+            if is_schema_validation_ok == True and \
+               format_to_schematron_xslt_mapping[current_format] is not None:
                 current_xslt_file = (
                     path_to_stylesheets + "/" + format_to_schematron_xslt_mapping[current_format]
                 )
@@ -196,7 +203,8 @@ def home(filename="", document_html_url=""):
             xslt = etree.tostring(stylesheet, pretty_print="True", encoding="unicode")
 
             xslt_proc = Xslt_proc(stylesheet_text=xslt)
-            document_html = transform_xml(xslt_proc, xml)
+            print(xslt_params[current_format])
+            document_html = transform_xml(xslt_proc, xml, xslt_params[current_format])
 
             document_html_name = str(uuid.uuid4()) + ".html"
             with open(
