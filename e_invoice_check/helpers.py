@@ -11,14 +11,16 @@ path_to_schemas = "e_invoice_check/static/xsd"
 allowed_formats = {
     "peppol_bis_billing_3.0_invoice":     "Peppol BIS Billing 3.0 ----- Invoice",
     "peppol_bis_billing_3.0_credit_note": "Peppol BIS Billing 3.0 -- CreditNote",
+    "xrechnung_cii_2.3":                  "XRechnung CII 2.3 ---------- Invoice",
     "fatturaPA_v1.2":                     "FatturaPA 1.2 (Italy) ------ Invoice",
     "nav_osa_3.0_invoice":                "NAV OSA 3.0 (Hungary) ------ Invoice",
-    "ksef_eFaktura_2.0":                  "KSeF eFaktura 2.0 (Poland) - Invoice",
+    "ksef_eFaktura_2.0":                  "KSeF eFaktur 2.0 (Poland) - Invoice",
 }
 
 format_to_schema_mapping = {
     "peppol_bis_billing_3.0_invoice": "oasis_ubl/maindoc/UBL-Invoice-2.1.xsd",
     "peppol_bis_billing_3.0_credit_note": "oasis_ubl/maindoc/UBL-CreditNote-2.1.xsd",
+    "xrechnung_cii_2.3": "D16B_SCRDM_Subset_CII_uncoupled/uncoupled_clm/CII/uncefact/data/standard/CrossIndustryInvoice_100pD16B.xsd",
     "fatturaPA_v1.2": "Schema_del_file_xml_FatturaPA_v1.2.2.xsd",
     "nav_osa_3.0_invoice": "OSA_Schemas_v3/invoiceData.xsd",
     "ksef_eFaktura_2.0": "KSeF_schemat.xsd",
@@ -27,6 +29,7 @@ format_to_schema_mapping = {
 format_to_schematron_xslt_mapping = {
     "peppol_bis_billing_3.0_invoice": "PEPPOL-EN16931-UBL_schematron.xslt",
     "peppol_bis_billing_3.0_credit_note": "PEPPOL-EN16931-UBL_schematron.xslt",
+    "xrechnung_cii_2.3": None,
     "fatturaPA_v1.2": None,
     "nav_osa_3.0_invoice": None,
     "ksef_eFaktura_2.0": None,
@@ -35,22 +38,26 @@ format_to_schematron_xslt_mapping = {
 format_to_schematron_mapping = {
     "peppol_bis_billing_3.0_invoice": "PEPPOL-EN16931-UBL.sch",
     "peppol_bis_billing_3.0_credit_note": "PEPPOL-EN16931-UBL.sch",
+    "xrechnung_cii_2.3": None,
     "fatturaPA_v1.2": None,
     "nav_osa_3.0_invoice": None,
     "ksef_eFaktura_2.0": None,
 }
 
 format_to_xslt_mapping = {
-    "peppol_bis_billing_3.0_invoice": "stylesheet-ubl.xslt",
-    "peppol_bis_billing_3.0_credit_note": "stylesheet-ubl.xslt",
-    "fatturaPA_v1.2": "fatturapa_v1.2.1_de-it.xsl",
-    "nav_osa_3.0_invoice": "NAV_InvoiceDataTemplate_XSLT_HTML.xslt",
-    "ksef_eFaktura_2.0": "kseffaktura.xsl",
+    "peppol_bis_billing_3.0_invoice": ["stylesheet-ubl.xslt"],
+    "peppol_bis_billing_3.0_credit_note": ["stylesheet-ubl.xslt"],
+    "xrechnung_cii_2.3": ["xrechnung-2.3.1-xrechnung-visualization-2023-05-12/xsl/cii-xr.xsl",
+                          "xrechnung-2.3.1-xrechnung-visualization-2023-05-12/xsl/xrechnung-html.xsl"],
+    "fatturaPA_v1.2": ["fatturapa_v1.2.1_de-it.xsl"],
+    "nav_osa_3.0_invoice": ["NAV_InvoiceDataTemplate_XSLT_HTML.xslt"],
+    "ksef_eFaktura_2.0": ["kseffaktura.xsl"],
 }
 
 xslt_params = {
     "peppol_bis_billing_3.0_invoice": {"my_param": ""},
     "peppol_bis_billing_3.0_credit_note": {"my_param": ""},
+    "xrechnung_cii_2.3": {"my_param": ""}, 
     "fatturaPA_v1.2": {"my_param": ""},
     "nav_osa_3.0_invoice": {"lang": "EN"},
     "ksef_eFaktura_2.0": {"my_param": ""},
@@ -94,6 +101,18 @@ def transform_xml(xslt_proc, input_xml_text, params):
     out = xslt_proc.xform.transform_to_string(xdm_node=doc)
     return out
 
+def transform_xdm_nodes(xsltproc, stylesheet_objs, input_obj, cwd="", params="{}"):
+    xsltproc.clear_parameters()
+    xsltproc.set_cwd(cwd)
+
+    for i, stylesheet in enumerate(stylesheet_objs):
+        executable = xsltproc.compile_stylesheet(stylesheet_node=stylesheet)
+        if len(params) != 0:
+            for key, value in params.items():
+                executable.set_parameter(key, value)
+        result_obj = executable.apply_templates_returning_value(xdm_node=input_obj)
+        input_obj = result_obj
+    return result_obj
 
 def get_errors_from_schema_validation(xml, schema):
     """validates against the schema"""
@@ -102,3 +121,4 @@ def get_errors_from_schema_validation(xml, schema):
         schema_validator.assert_(xml)
     except AssertionError as e:
         return schema_validator.error_log
+

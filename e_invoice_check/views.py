@@ -154,7 +154,7 @@ def home(filename="", document_html_url=""):
                 xslt = etree.tostring(stylesheet, pretty_print="True", encoding="unicode")
 
                 xslt_proc = Xslt_proc(stylesheet_text=xslt)
-                schematron_result = transform_xml(xslt_proc, xml)
+                schematron_result = transform_xml(xslt_proc, xml, xslt_params[current_format])
 
                 # Encode the XML string to bytes
                 schematron_result_bytes = schematron_result.encode('utf-8')
@@ -196,15 +196,35 @@ def home(filename="", document_html_url=""):
                 validation_report["schematron_validation_done"] = True
                     
             # Create html view of the document with xslt3 and save to template dir
+
             current_xslt_file = (
-                path_to_stylesheets + "/" + format_to_xslt_mapping[current_format]
+                path_to_stylesheets + "/" + format_to_xslt_mapping[current_format][0]
             )
             stylesheet = etree.parse(current_xslt_file, parser=my_parser)
             xslt = etree.tostring(stylesheet, pretty_print="True", encoding="unicode")
 
             xslt_proc = Xslt_proc(stylesheet_text=xslt)
-            print(xslt_params[current_format])
-            document_html = transform_xml(xslt_proc, xml, xslt_params[current_format])
+
+            if len(format_to_xslt_mapping[current_format]) > 1:
+                # for some formats a two step transformation is required
+                pass
+                # from intermediate transform to final html
+                intermediate_format = transform_xml(xslt_proc, xml, xslt_params[current_format])
+
+
+                current_xslt_file = (
+                    path_to_stylesheets + "/" + format_to_xslt_mapping[current_format][1]
+                )
+                stylesheet = etree.parse(current_xslt_file, parser=my_parser)
+                xslt = etree.tostring(stylesheet, pretty_print="True", encoding="unicode")
+
+                xslt_proc2 = Xslt_proc(stylesheet_text=xslt)
+
+
+                # document_html = transform_xml(xslt_proc2, intermediate_format, xslt_params[current_format])
+
+            else:
+                document_html = transform_xml(xslt_proc, xml, xslt_params[current_format])
 
             document_html_name = str(uuid.uuid4()) + ".html"
             with open(
